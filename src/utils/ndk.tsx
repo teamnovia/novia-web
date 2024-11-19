@@ -19,7 +19,7 @@ const cacheAdapter = new NDKCacheAdapterDexie({ dbName: 'novia' });
 const ndk = new NDK({
   cacheAdapter,
   autoConnectUserRelays: true,
-  explicitRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol', 'wss://nostr.cercatrova.me'],
+  explicitRelayUrls: ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.primal.net', 'wss://purplepag.es'],
 });
 
 export const NDKContext = createContext<NDKContextType>({
@@ -115,7 +115,8 @@ export const NDKContextProvider = ({ children }: { children: React.ReactElement 
   };
 
   const logout = function logout() {
-    localStorage.clear();
+    localStorage.removeItem('local-signer');
+    localStorage.removeItem('private-key');
     location.reload();
   };
 

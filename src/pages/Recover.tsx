@@ -114,7 +114,7 @@ function Recover() {
   }, [videoData]);
 
   if (blossomServersForUploads.length == 0) {
-    return <ConfigNeeded message='No servers for videos uploads found'/>
+    return <ConfigNeeded message="No servers for videos uploads found" />;
   }
 
   return (
@@ -123,7 +123,11 @@ function Recover() {
         <h2 className="text-2xl mb-2">Recovering video from archives</h2>
         <div className="flex flex-row gap-4">
           <div className="flex-grow ">
-            <div className="grid grid-cols-[10em_1fr] gap-1">
+            <div className="grid grid-cols-[12em_1fr] gap-1">
+              <div>Originally archived by:</div>
+              <div className="text-white">
+                <Avatar npub={videoData.archivedByNpub} />
+              </div>
               <div>Author / Channel:</div>
               <div className="text-white">{videoData.author}</div>
               <div>Title: </div>

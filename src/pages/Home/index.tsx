@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { formatDate, getProxyUrl, mapVideoData, toTime, VideoData, VideoFormat } from '../../utils/utils';
+import { mapVideoData, VideoData, VideoFormat } from '../../utils/utils';
 import LazyLoad from 'react-lazyload';
 import MiniSearch from 'minisearch';
 import { useNDK } from '../../utils/ndk';
@@ -19,6 +19,7 @@ import { DropDown } from '../../components/DropDown';
 import { Input } from '../../components/Input';
 import { useSettings } from '../Settings/useSettings';
 import { ConfigNeeded } from './ConfigNeeded';
+import { VideoThumb } from './VideoThumb';
 
 const miniSearch = new MiniSearch<VideoData>({
   idField: 'eventId',
@@ -63,7 +64,6 @@ function Home() {
     if (author) {
       setVideoFilter({ ...main, '#c': [author] });
       setFormat('both');
-      setSource('all');
       setSearchText('');
     } else {
       setVideoFilter(vf => {
@@ -73,11 +73,25 @@ function Home() {
         return filter;
       });
     }
-  }, [author]);
+  }, [author, source]);
 
   useEffect(() => {
     if (!videoFilter) return;
     let foundANewEvent = false;
+
+    if (videoFilter.until == undefined) {
+      /*
+      // Only for first run after filter change
+      if (source !== 'all') {
+        setAllSources({ [source]: true });
+      } else {
+        setAllSources({});
+      }
+        
+      setAllYears({});
+      */
+      miniSearch.removeAll();
+    }
 
     let oldestTimestamp = Infinity;
     // if (Object.keys(allVideos).length == 0) {
@@ -94,11 +108,10 @@ function Home() {
       setLoading(true);
       const video = mapVideoData(e); // today handle newer events (replacable!!)
 
-      if (video.contentWarning) return; // ignore adult content (for now)
+      //if (video.contentWarning) return; // ignore adult content (for now)
 
       if (video.source && !allSources[video.source]) {
-        const s = video.source;
-        setAllSources(old => ({ ...old, [s]: true }));
+        setAllSources(old => ({ ...old, [video.source as string]: true }));
       }
       if (video.published_year && video.published_at > 0 && !allSources[video.published_year]) {
         setAllYears(old => ({ ...old, [video.published_year]: true }));
@@ -111,6 +124,7 @@ function Home() {
       }
       oldestTimestamp = Math.min(oldestTimestamp, e.created_at || oldestTimestamp);
     });
+
     archiveSubscription.on('eose', () => {
       console.log('Video count on ose', Object.keys(allVideos).length);
       doSearch();
@@ -119,9 +133,6 @@ function Home() {
       } else {
         setLoading(false);
       }
-    });
-    archiveSubscription.on('close', () => {
-      doSearch();
     });
 
     archiveSubscription.start();
@@ -151,6 +162,12 @@ function Home() {
     }
   }
 
+  const verticalVideoRatio = useMemo(() => {
+    if (!videos) return 0;
+    const numVertical = videos.reduce((prev, current) => prev + (current.format == 'vertical' ? 1 : 0), 0);
+    return numVertical / videos.length;
+  }, [videos]);
+
   useEffect(() => {
     doSearch();
   }, [searchText, format, source, author, year]);
@@ -170,7 +187,7 @@ function Home() {
       case 'tiktok':
         setFormat('vertical');
         break;
-      case 'all':
+      default:
         setFormat('both');
         break;
     }
@@ -240,11 +257,11 @@ function Home() {
   );
 
   if (relays.length == 0) {
-    return <ConfigNeeded message='No Relays found'/>
+    return <ConfigNeeded message="No Relays found" />;
   }
 
   if (blossomServersForDownload.length == 0) {
-    return <ConfigNeeded message='No servers to look up videos found'/>
+    return <ConfigNeeded message="No servers to look up videos found" />;
   }
 
   return (
@@ -259,7 +276,7 @@ function Home() {
             placeholder="filter videos"
             value={searchText}
             setValue={v => setSearchText(v)}
-            icon={<SearchIcon className='w-6'/>}
+            icon={<SearchIcon className="w-6" />}
           />
           <DropDown value={year} setValue={v => setYear(v)} options={yearOptions} />
           <DropDown
@@ -275,39 +292,20 @@ function Home() {
           </div>
         )}
         {videos && videos.length > 0 && (
-          <div className="grid gap-4 md:gap-8 rounded-md grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {videos.map(
-              v =>
-                v.image && (
-                  <LazyLoad key={v.eventId}>
-                    <a className="flex flex-col cursor-pointer">
-                      <div className="h-48 w-full relative">
-                        <img
-                          onClick={() => videoClicked(v)}
-                          className={`rounded-lg object-cover w-full h-full ${v.contentWarning && !unblurred[v.eventId] && 'blur-md '}`}
-                          src={getProxyUrl(v.image)}
-                          loading="lazy"
-                          alt={v.title} // Always good to include alt text for accessibility
-                        />
-                        {v.contentWarning && !unblurred[v.eventId] && (
-                          <div className="absolute top-1/2 w-full text-white text-center pointer-events-none">
-                            {v.contentWarning}
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-2 font-bold text-white" onClick={() => navigate(`/author/${v.author}`)}>
-                        {v.author}
-                      </div>
-                      <div className="text-sm text-left">{v.title}</div>
-                      {v.duration && (
-                        <div className="text-xs text-right text-white mt-1 ">
-                          {toTime(v.duration)} | {formatDate(v.published_at)}
-                        </div>
-                      )}
-                    </a>
-                  </LazyLoad>
-                )
-            )}
+          <div
+            className={`grid gap-4 md:gap-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'}`}
+          >
+            {videos.map(v => (
+              <LazyLoad key={v.eventId}>
+                <VideoThumb
+                  vertical={format == 'vertical' || verticalVideoRatio > 0.95}
+                  onClick={() => videoClicked(v)}
+                  skipBlur={unblurred[v.eventId]}
+                  video={v}
+                  author={author}
+                ></VideoThumb>
+              </LazyLoad>
+            ))}
           </div>
         )}
       </div>

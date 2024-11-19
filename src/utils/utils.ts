@@ -62,6 +62,7 @@ export type VideoFormat = 'widescreen' | 'vertical';
 
 export type VideoData = {
   eventId: string;
+  archivedByNpub: string;
   identifier: string;
   x?: string;
   url: string | undefined;
@@ -100,6 +101,7 @@ export function mapVideoData(ev: NDKEvent): VideoData {
 
   return {
     eventId: ev.id,
+    archivedByNpub: nip19.npubEncode(ev.pubkey),
     identifier: getTagValue(ev, 'd') || ev.id,
     x: getTagValue(ev, 'x'),
     url: getTagValue(ev, 'url'), // todo add imeta parsing
