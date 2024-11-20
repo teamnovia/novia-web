@@ -99,7 +99,7 @@ export const NDKContextProvider = ({ children }: { children: React.ReactElement 
       const password = prompt('Enter your private key password');
       if (password === null) throw new Error('No password provided');
       const plaintext = bytesToHex(decrypt(key, password));
-      console.log(plaintext);
+      //console.log(plaintext);
 
       ndk.signer = new NDKPrivateKeySigner(plaintext);
       await ndk.signer.blockUntilReady();
@@ -135,6 +135,10 @@ export const NDKContextProvider = ({ children }: { children: React.ReactElement 
           await loginWithNostrAddress(autoLogin).catch(() => {});
         }
       } catch (e) {}
+    }
+    console.log('after init', user);
+    if (!user) {
+      await loginWithPrivateKey(nip19.nsecEncode(generateSecretKey()));
     }
   };
 

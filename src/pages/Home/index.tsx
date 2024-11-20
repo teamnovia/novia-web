@@ -40,7 +40,10 @@ function Home() {
   const [format, setFormat] = useState<VideoFormat | 'both'>('widescreen');
   const [searchText, setSearchText] = useState('');
   const [source, setSource] = useState<string | 'all'>('youtube');
-  const [videoFilter, setVideoFilter] = useState<NDKFilter | undefined>();
+  const [videoFilter, setVideoFilter] = useState<NDKFilter | undefined>({
+    kinds: [NDKKind.HorizontalVideo, NDKKind.VerticalVideo],
+    limit: 400,
+  });
   const [loading, setLoading] = useState(false);
   const [unblurred, setUnblurred] = useState<Record<string, boolean>>({});
   const [allSources, setAllSources] = useState<Record<string, boolean>>({});
@@ -57,22 +60,21 @@ function Home() {
   }, [author]);
 
   useEffect(() => {
-    const main: NDKFilter = {
-      kinds: [NDKKind.HorizontalVideo, NDKKind.VerticalVideo],
-      limit: 200,
-    };
-    if (author) {
-      setVideoFilter({ ...main, '#c': [author] });
-      setFormat('both');
-      setSearchText('');
-    } else {
-      setVideoFilter(vf => {
-        const filter = { ...vf };
-        delete filter['#c'];
-        delete filter['until'];
-        return filter;
-      });
-    }
+    setVideoFilter(prev => {
+      const newFilter = { ...prev };
+      if (author && source != 'all') {
+        newFilter['#c'] = [author, source];
+      } else if (author) {
+        newFilter['#c'] = [author];
+      } else if (source != 'all') {
+        newFilter['#c'] = [source];
+      } else {
+        delete newFilter['#c'];
+      }
+      delete newFilter['until'];
+
+      return newFilter;
+    });
   }, [author, source]);
 
   useEffect(() => {
@@ -95,10 +97,11 @@ function Home() {
 
     let oldestTimestamp = Infinity;
     // if (Object.keys(allVideos).length == 0) {
+    console.log('videoFilter', videoFilter);
     const archiveSubscription = ndk.subscribe(
       videoFilter,
       {
-        cacheUsage: NDKSubscriptionCacheUsage.CACHE_FIRST,
+        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL,
         closeOnEose: true,
       },
       NDKRelaySet.fromRelayUrls(relays, ndk)
@@ -108,7 +111,7 @@ function Home() {
       setLoading(true);
       const video = mapVideoData(e); // today handle newer events (replacable!!)
 
-      //if (video.contentWarning) return; // ignore adult content (for now)
+      if (video.contentWarning) return; // ignore adult content (for now)
 
       if (video.source && !allSources[video.source]) {
         setAllSources(old => ({ ...old, [video.source as string]: true }));
@@ -135,6 +138,10 @@ function Home() {
       }
     });
 
+    archiveSubscription.on('close', () => {
+      doSearch();
+    });
+
     archiveSubscription.start();
   }, [videoFilter]);
 
@@ -157,8 +164,8 @@ function Home() {
         .filter(v => source == 'all' || v.source == source)
         .filter(v => year == '' || v.published_year == year)
         .filter(v => author == undefined || v.author == author);
-      newVideos.sort((a, b) => (a.published_at > b.published_at ? -1 : 1));
-      setVideos(newVideos.slice(0, 200));
+      newVideos.sort((a, b) => (a.published_at > b.published_at ? -1 : 1)); // published_at DESC
+      setVideos(author ? newVideos : newVideos.slice(0, 200));
     }
   }
 
