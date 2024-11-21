@@ -63,13 +63,8 @@ function Settings() {
         </div>
       </div>
 
-      <div className=''>
-
-      
-</div>
+      <div className=""></div>
     </div>
-
-
   );
 }
 

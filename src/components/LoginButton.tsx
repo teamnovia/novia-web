@@ -17,8 +17,8 @@ const LoginButton: React.FC = () => {
   };
 
   return (
-    <button className="btn btn-ghost mr-2" onClick={handleLogin} title='Login with extension (NIP07)'>
-      <UserCircleIcon/>
+    <button className="btn btn-ghost mr-2" onClick={handleLogin} title="Login with extension (NIP07)">
+      <UserCircleIcon />
     </button>
   );
 };

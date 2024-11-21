@@ -102,9 +102,8 @@ function Archive() {
 
   const isError = useMemo(() => statusEvents.filter(se => se.status == 'error').length > 0, [statusEvents]);
 
-
   if (relays.length == 0) {
-    return <ConfigNeeded message='No Relays found'/>
+    return <ConfigNeeded message="No Relays found" />;
   }
 
   return (

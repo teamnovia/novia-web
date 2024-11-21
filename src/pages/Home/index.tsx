@@ -280,7 +280,7 @@ function Home() {
           <DropDown value={source} setValue={v => handleSourceSelection(v)} options={sourceOptions} />
           <Input
             className="w-1/2"
-            placeholder="filter videos"
+            placeholder="Search"
             value={searchText}
             setValue={v => setSearchText(v)}
             icon={<SearchIcon className="w-6" />}

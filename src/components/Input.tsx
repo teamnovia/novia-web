@@ -17,6 +17,7 @@ export const Input = ({ className, value, setValue, icon, placeholder, disabled,
     <label
       className={`input bg-base-200 focus-within:border-primary focus-within:outline-0 flex flex-grow items-center gap-2 ${className}`}
     >
+      {icon}
       <input
         type="text"
         onFocus={onFocus}
@@ -27,7 +28,7 @@ export const Input = ({ className, value, setValue, icon, placeholder, disabled,
         placeholder={placeholder}
         disabled={disabled}
       />
-      {value ? <XMarkIcon className="w-4 cursor-pointer" onClick={() => setValue('')} /> : icon}
+      {value && <XMarkIcon className="w-4 cursor-pointer" onClick={() => setValue('')} />}
     </label>
   );
 };

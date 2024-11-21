@@ -19,7 +19,7 @@ export const Layout = () => {
   return (
     <div className="main">
       <ScrollToTop />
-      <div className="navbar bg-base-300 ">
+      <div className="navbar bg-base-300 min-h-0">
         <div className="navbar-start">
           <img src="/dl.png" className="w-8 ml-2 cursor-pointer" onClick={() => navigate('/')}></img>
           <div className="p-2 md:p-4 text-2xl cursor-pointer" onClick={() => navigate('/')}>
@@ -28,7 +28,7 @@ export const Layout = () => {
           </div>
         </div>
         <div className="navbar-center hidden md:flex gap-2"></div>
-        <div className="navbar-end flex gap-4">
+        <div className="navbar-end flex gap-1 md:gap-4">
           {user?.profile?.displayName && (
             <button className="btn btn-primary" onClick={() => navigate('/archive')}>
               <PlusIcon />
