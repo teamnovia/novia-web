@@ -35,7 +35,7 @@ function Archive() {
   const publishArchiveRequest = async (url: string) => {
     const request = new NDKDVMRequest(ndk);
     request.kind = DVM_VIDEO_ARCHIVE_REQUEST_KIND;
-    request.addInput(url, 'url', '', 'archive');
+    request.addInput(url, 'url');
     await request.publish(NDKRelaySet.fromRelayUrls(relays, ndk));
     setArchiveRequestId(request.id);
   };

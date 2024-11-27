@@ -2,16 +2,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useVideoData } from './useVideoData';
 import { formatDate, formatFileSize, getProxyUrl, toTime, VideoData } from '../utils/utils';
 import { Fragment, useEffect, useState } from 'react';
-import { NDKDVMRequest, NDKEvent, NDKKind, NDKRelaySet } from '@nostr-dev-kit/ndk';
+import { NDKDVMRequest, NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { useNDK } from '../utils/ndk';
 import { nip19 } from 'nostr-tools';
 import Avatar from '../components/Avatar';
 import { ArrowPathIcon } from '@heroicons/react/16/solid';
-import { uniqBy } from 'lodash';
-import { DVM_STATUS_UPDATE, DVM_VIDEO_ARCHIVE_REQUEST_KIND, DVM_VIDEO_ARCHIVE_RESULT_KIND } from '../env';
+import { DVM_VIDEO_UPLOAD_REQUEST_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
 import { DvmStatus, StatusType } from '../types';
 import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
+import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
+import { useDvmEvents } from '../utils/useDvmEvents';
 
 function Recover() {
   const { video } = useParams();
@@ -20,50 +21,23 @@ function Recover() {
   const [recoveryRequestId, setRecoveryRequestId] = useState<string | undefined>();
   const navigate = useNavigate();
   const [statusEvents, setStatusEvents] = useState<StatusType[]>([]);
-  const [events, setEvents] = useState<NDKEvent[]>([]);
-  const [trigger, setTrigger] = useState(0);
   const { relays, blossomServersForUploads } = useSettings();
+  const { events, stopAutorefresh } = useDvmEvents({ recoveryRequestId, delay: 5000 });
 
   useEffect(() => {
     document.title = 'novia | Recover';
   }, []);
 
-  useEffect(() => {
-    if (recoveryRequestId && trigger >= 0) {
-      const filter = {
-        kinds: [DVM_VIDEO_ARCHIVE_RESULT_KIND as NDKKind, DVM_STATUS_UPDATE],
-        '#e': [recoveryRequestId || ''],
-      };
-
-      const relaySet = (relays?.length ?? 0 > 0) ? NDKRelaySet.fromRelayUrls(relays as string[], ndk) : undefined;
-      const sub = ndk.subscribe(filter, { closeOnEose: false }, relaySet);
-      sub.on('event', (ev: NDKEvent) => {
-        setEvents(evs => {
-          const newEvents = evs.concat([ev]).sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0));
-          return uniqBy(newEvents, (e: NDKEvent) => e.tagId());
-        });
-      });
-      sub.on('eose', () => {
-        setTimeout(() => {
-          setTrigger(t => t + 1);
-        }, 5000);
-      });
-      return () => {
-        sub.stop();
-      };
-    }
-  }, [recoveryRequestId, trigger]);
-
   // for longer running uploads I have to resubscribe
 
   useEffect(() => {
     const newStatusMessages: StatusType[] = [];
-    console.log(events);
+    // console.log(events);
     events
       .sort((a, b) => (a.created_at && b.created_at && a.created_at > b.created_at ? 1 : -1))
       .forEach(e => {
-        if (e.kind == DVM_VIDEO_ARCHIVE_RESULT_KIND && e.tagValue('e') == recoveryRequestId) {
-          setTrigger(-1); // disable subscription refresh
+        if (e.kind == DVM_VIDEO_UPLOAD_RESULT_KIND && e.tagValue('e') == recoveryRequestId) {
+          stopAutorefresh();
           navigate(`/v/${video}`);
         }
         if (e.kind == 7000 && e.tagValue('e') == recoveryRequestId) {
@@ -97,8 +71,8 @@ function Recover() {
     if (!videoData.x || !videoData.relayUrl) return;
 
     const request = new NDKDVMRequest(ndk);
-    request.kind = DVM_VIDEO_ARCHIVE_REQUEST_KIND;
-    request.addInput(videoData.eventId, 'event', videoData.relayUrl, 'upload');
+    request.kind = DVM_VIDEO_UPLOAD_REQUEST_KIND;
+    request.addInput(videoData.eventId, 'event', videoData.relayUrl);
     request.addParam('x', videoData.x);
     for (const server of blossomServersForUploads) {
       request.addParam('target', server);
@@ -124,7 +98,7 @@ function Recover() {
         <div className="flex flex-row gap-4">
           <div className="flex-grow ">
             <div className="grid grid-cols-[12em_1fr] gap-1">
-              <div>Originally archived by:</div>
+              <div>Archived by:</div>
               <div className="text-white">
                 <Avatar npub={videoData.archivedByNpub} />
               </div>
@@ -137,7 +111,19 @@ function Recover() {
               <div>Size: </div>
               <div className="text-white">{formatFileSize(videoData.size)}</div>
               <div>Video Hash: </div>
-              <div className="text-white break-words">{videoData.x}</div>
+              <div className="text-white break-words flex  items-center" title={videoData.x}>
+                {videoData.x?.substring(0, 12)}...{' '}
+                <button
+                  className="btn btn-sm btn-ghost"
+                  onClick={e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(`${videoData.x}`);
+                  }}
+                >
+                  <ClipboardDocumentIcon className="w-4"></ClipboardDocumentIcon>
+                </button>
+              </div>
               <div>Published: </div>
               <div className="text-white">{formatDate(videoData.published_at)}</div>
               {videoData.dim && (

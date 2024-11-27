@@ -19,7 +19,8 @@ import { DropDown } from '../../components/DropDown';
 import { Input } from '../../components/Input';
 import { useSettings } from '../Settings/useSettings';
 import { ConfigNeeded } from './ConfigNeeded';
-import { VideoThumb } from './VideoThumb';
+import { useUserServers } from '../../utils/useUserServers';
+import { VideoElement } from './VideoElement';
 
 const miniSearch = new MiniSearch<VideoData>({
   idField: 'eventId',
@@ -39,8 +40,8 @@ function Home() {
   const navigate = useNavigate();
   const [format, setFormat] = useState<VideoFormat | 'both'>('widescreen');
   const [searchText, setSearchText] = useState('');
-  const [source, setSource] = useState<string | 'all'>('youtube');
-  const [videoFilter, setVideoFilter] = useState<NDKFilter | undefined>({
+  const [source, setSource] = useState<string | 'all'>('all');
+  const [videoFilter, setVideoFilter] = useState<NDKFilter>({
     kinds: [NDKKind.HorizontalVideo, NDKKind.VerticalVideo],
     limit: 400,
   });
@@ -50,6 +51,7 @@ function Home() {
   const [allYears, setAllYears] = useState<Record<number, boolean>>({});
   const [year, setYear] = useState('');
   const { relays, blossomServersForDownload } = useSettings();
+  const { userServers } = useUserServers();
 
   useEffect(() => {
     if (author) {
@@ -78,25 +80,13 @@ function Home() {
   }, [author, source]);
 
   useEffect(() => {
-    if (!videoFilter) return;
     let foundANewEvent = false;
+    let oldestTimestamp = Infinity;
 
     if (videoFilter.until == undefined) {
-      /*
-      // Only for first run after filter change
-      if (source !== 'all') {
-        setAllSources({ [source]: true });
-      } else {
-        setAllSources({});
-      }
-        
-      setAllYears({});
-      */
-      miniSearch.removeAll();
+      miniSearch.removeAll(); // clear the search index
     }
 
-    let oldestTimestamp = Infinity;
-    // if (Object.keys(allVideos).length == 0) {
     console.log('videoFilter', videoFilter);
     const archiveSubscription = ndk.subscribe(
       videoFilter,
@@ -302,17 +292,21 @@ function Home() {
           <div
             className={`grid gap-4 md:gap-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'}`}
           >
-            {videos.map(v => (
-              <LazyLoad key={v.eventId}>
-                <VideoThumb
-                  vertical={format == 'vertical' || verticalVideoRatio > 0.95}
-                  onClick={() => videoClicked(v)}
-                  skipBlur={unblurred[v.eventId]}
-                  video={v}
-                  author={author}
-                ></VideoThumb>
-              </LazyLoad>
-            ))}
+            {videos.map(
+              v =>
+                v.image && (
+                  <LazyLoad key={v.eventId}>
+                    <VideoElement
+                      vertical={format == 'vertical' || verticalVideoRatio > 0.95}
+                      onClick={() => videoClicked(v)}
+                      skipBlur={unblurred[v.eventId]}
+                      video={v}
+                      author={author}
+                      userServers={userServers}
+                    ></VideoElement>
+                  </LazyLoad>
+                )
+            )}
           </div>
         )}
       </div>

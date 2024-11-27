@@ -1,54 +1,60 @@
-import { formatDate, getProxyUrl, toTime, VideoData } from '../../utils/utils';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { getHashFromURL, getProxyUrl, VideoData } from '../../utils/utils';
+import { findFirstAvailableServerMultiPass } from '../useVideoData';
+import { useSettings } from '../Settings/useSettings';
 
 export const VideoThumb = ({
   video,
-  vertical,
-  author,
   onClick,
   skipBlur,
+  userServers,
+  vertical,
+  className = 'w-full mb-2'
 }: {
   video: VideoData;
-  author?: string;
-  vertical: boolean;
   skipBlur: boolean;
   onClick: React.MouseEventHandler<HTMLImageElement>;
+  userServers: string[];
+  vertical: boolean;
+  className?: string;
 }) => {
-  const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState(video.image);
+  const { blossomServersForDownload } = useSettings();
+
+  const lookupImageUrl = async (url?: string) => {
+    if (!url) return;
+    const hash = getHashFromURL(url);
+
+    if (hash) {
+      const url = await findFirstAvailableServerMultiPass([blossomServersForDownload, userServers], hash);
+      if (url) {
+        console.log('using fallback image url ' + url);
+        setImageUrl(getProxyUrl(url));
+        return;
+      }
+    }
+
+    // use the plain url without proxy
+    setImageUrl(imageUrl);
+  };
 
   return (
-    video.image && (
-      <a className="flex flex-col cursor-pointer">
-        <div
-          className={`w-full relative mb-2 ${vertical ? 'aspect-portrait' : 'aspect-video'} overflow-hidden rounded-lg`}
-        >
-          <img
-            onClick={onClick}
-            className={`rounded-lg object-cover absolute top-0 left-0 w-full h-full ${
-              video.contentWarning && !skipBlur ? 'blur-md' : ''
-            } hover:filter hover:brightness-110`}
-            src={getProxyUrl(video.image)}
-            loading="lazy"
-            alt={video.title} // Always good to include alt text for accessibility
-          />
-          {video.contentWarning && !skipBlur && (
-            <div className="absolute top-1/2 left-0 w-full text-white text-center pointer-events-none transform -translate-y-1/2 px-4">
-              {video.contentWarning}
-            </div>
-          )}
+    <div className={`${className} relative ${vertical ? 'aspect-portrait' : 'aspect-video'} overflow-hidden rounded-lg`}>
+      <img
+        onClick={onClick}
+        className={`rounded-lg object-cover absolute top-0 left-0 w-full h-full ${
+          video.contentWarning && !skipBlur ? 'blur-md' : ''
+        } hover:filter hover:brightness-110`}
+        src={imageUrl ? getProxyUrl(imageUrl) : imageUrl}
+        onError={() => lookupImageUrl(video.image)}
+        loading="lazy"
+        alt={video.title} // Always good to include alt text for accessibility
+      />
+      {video.contentWarning && !skipBlur && (
+        <div className="absolute top-1/2 left-0 w-full text-white text-center pointer-events-none transform -translate-y-1/2 px-4">
+          {video.contentWarning}
         </div>
-        {!author /* skip when author filter is set */ && (
-          <div className="font-bold text-white" onClick={() => navigate(`/author/${video.author}`)}>
-            {video.author}
-          </div>
-        )}
-        <div className="text-sm text-left">{video.title}</div>
-        {video.duration && (
-          <div className="text-xs text-right text-white mt-1 ">
-            {toTime(video.duration)} | {formatDate(video.published_at)}
-          </div>
-        )}
-      </a>
-    )
+      )}
+    </div>
   );
 };

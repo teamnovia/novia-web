@@ -29,6 +29,17 @@ export function hashSha256(obj: MyObject): string {
 
   return hashHex;
 }
+
+/** returns the last sha256 in a URL */
+export function getHashFromURL(url: string | URL) {
+  if (typeof url === 'string') url = new URL(url);
+
+  const hashes = Array.from(url.pathname.matchAll(/[0-9a-f]{64}/gi));
+  if (hashes.length > 0) return hashes[hashes.length - 1][0];
+
+  return null;
+}
+
 export const formatDate = (unixTimeStamp: number): string => {
   const ts = unixTimeStamp > 1711200000000 ? unixTimeStamp / 1000 : unixTimeStamp;
   if (ts == 0) return 'never';
@@ -45,7 +56,7 @@ export const getProxyUrl = (url: string) => {
   if (url.startsWith('blob:')) {
     return url;
   }
-  return `${PROXY_URL}${url}`;
+  return `${PROXY_URL}${encodeURI(url)}`;
 };
 
 export const toTime = (seconds: number) => {

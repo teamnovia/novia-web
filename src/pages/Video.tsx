@@ -4,7 +4,7 @@ import { TiktokLogo } from '../components/icons/TiktokLogo';
 import { usePlayableVideoUrl, useVideoData } from './useVideoData';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNDK } from '../utils/ndk';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   MediaController,
   MediaControlBar,
@@ -17,26 +17,54 @@ import {
   MediaFullscreenButton,
   MediaPlaybackRateButton,
 } from 'media-chrome/react';
+import { useUserServers } from '../utils/useUserServers';
 
 function Video() {
   const { user } = useNDK();
   const { video } = useParams();
   const { videoData: vd } = useVideoData(video);
-  const { videoUrl, findVideoUrl, noServerFound } = usePlayableVideoUrl(vd);
+  const { userServers } = useUserServers();
+  const { videoUrl, findVideoUrl, noServerFound } = usePlayableVideoUrl(vd, userServers);
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     document.title = 'novia | ' + vd?.title;
   }, [vd?.title]);
 
-  const handleError = () => {
-    // const errorUrl = (e.target as HTMLVideoElement).src;
-    findVideoUrl();
+  const handleError = async (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    const error = (e.target as HTMLVideoElement).error;
+
+    if (error) {
+      let errorMessage;
+
+      switch (error.code) {
+        case error.MEDIA_ERR_ABORTED:
+          errorMessage = 'The video playback was aborted.';
+          break;
+        case error.MEDIA_ERR_NETWORK:
+          errorMessage = 'A network error caused the video download to fail.';
+          break;
+        case error.MEDIA_ERR_DECODE:
+          errorMessage = 'The video playback was aborted due to a decoding error.';
+          break;
+        case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = 'The video format is not supported or the file is missing.';
+          break;
+        default:
+          errorMessage = 'An unknown error occurred.';
+      }
+
+      setErrorMessage(`Video Error: ${errorMessage}`);
+      console.error(`Video Error: ${errorMessage}`);
+      await findVideoUrl();
+    }
   };
 
   return (
     vd && (
       <div className="mt-4 gap-4 flex flex-col">
+        {errorMessage && <span className="alert alert-error">{errorMessage} </span>}
         {noServerFound && (
           <div className="alert alert-ghost border-error flex flex-col md:flex-row">
             <div className="flex flex-col gap-2 flex-grow">
@@ -74,8 +102,10 @@ function Video() {
             crossOrigin="anonymous"
             src={videoUrl}
             autoPlay={true}
+            playsInline
+            muted={true}
             poster={vd.image}
-            onError={() => handleError()}
+            onError={e => handleError(e)}
           ></video>
           <MediaControlBar autohide hidden={!videoUrl}>
             <MediaPlayButton />

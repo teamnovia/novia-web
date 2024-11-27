@@ -4,8 +4,9 @@ import './Layout.css';
 import { useEffect } from 'react';
 import useLocalStorageState from '../../utils/useLocalStorageState';
 import ScrollToTop from '../ScrollToTop';
-import { Cog6ToothIcon, PlusIcon } from '@heroicons/react/24/outline';
+import {  Cog6ToothIcon, PlusIcon } from '@heroicons/react/24/outline';
 import LoginButton from '../LoginButton';
+import { Notifications } from '../Notifications';
 
 export const Layout = () => {
   const { user, loginWithExtension, logout } = useNDK();
@@ -28,12 +29,13 @@ export const Layout = () => {
           </div>
         </div>
         <div className="navbar-center hidden md:flex gap-2"></div>
-        <div className="navbar-end flex gap-1 md:gap-4">
+        <div className="navbar-end flex gap-1 md:gap-2">
           {user?.profile?.displayName && (
             <button className="btn btn-primary" onClick={() => navigate('/archive')}>
               <PlusIcon />
             </button>
           )}
+          <Notifications userServers={[]} />
           <button className="btn btn-ghost" onClick={() => navigate('/settings')}>
             <Cog6ToothIcon />
           </button>

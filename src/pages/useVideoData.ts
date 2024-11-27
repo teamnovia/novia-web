@@ -42,21 +42,29 @@ const checkUrl = async (url: string): Promise<string> => {
  * @param hash - The hash string to append to each server URL.
  * @returns A Promise that resolves to the first available full URL or null if none are available.
  */
-async function findFirstAvailableServer(servers: string[], hash: string): Promise<string | null> {
+export async function findFirstAvailableServer(servers: string[], hash: string): Promise<string | undefined> {
   // Construct full URLs by combining each server with the hash
-  const urls = servers.map(server => `${server.replace(/\/+$/, '')}/${hash}`);
+  const firstUrls = servers.map(server => `${server.replace(/\/+$/, '')}/${hash}`);
 
   // Create an array of Promises for each HEAD request
-  const fetchPromises = urls.map(url => checkUrl(url));
+  const fetchPromises = firstUrls.map(url => checkUrl(url));
 
   try {
     // Promise.any resolves as soon as any Promise resolves
     const firstAvailableUrl = await Promise.any(fetchPromises);
     return firstAvailableUrl;
-  } catch (error) {
-    // If all Promises reject, Promise.any throws an AggregateError
-    console.error('All servers failed to host the file:', error);
-    return null;
+  } catch (error) {}
+}
+
+export async function findFirstAvailableServerMultiPass(
+  serverLists: string[][],
+  hash: string
+): Promise<string | undefined> {
+  for (const serverList of serverLists) {
+    try {
+      const url = await findFirstAvailableServer(serverList, hash);
+      if (url) return url;
+    } catch (e) {}
   }
 }
 
@@ -89,17 +97,16 @@ export const useVideoData = (video?: string) => {
   };
 };
 
-export function usePlayableVideoUrl(videoData?: VideoData) {
+export function usePlayableVideoUrl(videoData: VideoData | undefined, userServers: string[]) {
   const [videoUrl, setVideoUrl] = useState<string>();
   const [noServerFound, setNoServerFound] = useState(false);
   const { blossomServersForDownload } = useSettings();
 
-  const findVideoUrl = async () => {
+  const findVideoUrl = async (x?: string) => {
     setVideoUrl(undefined);
-    setNoServerFound(false);
-
-    if (videoData && videoData.x) {
-      const vidUrl = await findFirstAvailableServer(blossomServersForDownload, videoData.x);
+    if (x) {
+      setNoServerFound(false);
+      const vidUrl = await findFirstAvailableServerMultiPass([blossomServersForDownload, userServers], x);
       if (vidUrl) {
         setVideoUrl(vidUrl);
       } else {
@@ -109,8 +116,8 @@ export function usePlayableVideoUrl(videoData?: VideoData) {
   };
 
   useEffect(() => {
-    findVideoUrl();
-  }, [videoData]);
+    findVideoUrl(videoData?.x);
+  }, [videoData, videoData?.x]);
 
   return {
     videoUrl,
