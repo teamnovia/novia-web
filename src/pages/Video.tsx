@@ -103,7 +103,7 @@ function Video() {
             src={videoUrl}
             autoPlay={true}
             playsInline
-            muted={true}
+            muted={false}
             poster={vd.image}
             onError={e => handleError(e)}
           ></video>
