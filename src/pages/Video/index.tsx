@@ -1,9 +1,7 @@
-import { formatFileSize, toTime } from '../utils/utils';
-import { YoutubeLogo } from '../components/icons/YoutubeLogo';
-import { TiktokLogo } from '../components/icons/TiktokLogo';
-import { usePlayableVideoUrl, useVideoData } from './useVideoData';
+import { formatFileSize, toTime } from '../../utils/utils';
+import { usePlayableVideoUrl, useVideoData } from '../useVideoData';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useNDK } from '../utils/ndk';
+import { useNDK } from '../../utils/ndk';
 import { useEffect, useState } from 'react';
 import {
   MediaController,
@@ -17,7 +15,8 @@ import {
   MediaFullscreenButton,
   MediaPlaybackRateButton,
 } from 'media-chrome/react';
-import { useUserServers } from '../utils/useUserServers';
+import { useUserServers } from '../../utils/useUserServers';
+import { InfoCard } from './InfoCard';
 
 function Video() {
   const { user } = useNDK();
@@ -119,28 +118,27 @@ function Video() {
           </MediaControlBar>
         </MediaController>
 
-        <div>
-          {vd.author && (
-            <div className="text-sm cursor-pointer" onClick={() => navigate(`/author/${vd.author}`)}>
-              {vd.author}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col flex-grow">
+            <div>
+              {vd.author && (
+                <div className="text-sm cursor-pointer" onClick={() => navigate(`/author/${vd.author}`)}>
+                  {vd.author}
+                </div>
+              )}
             </div>
-          )}
+            <h2 className="flex-grow text-2xl text-white mb-4">{vd?.title}</h2>
 
-          <div className="flex flex-row">
-            <h2 className="flex-grow text-2xl text-white">{vd?.title}</h2>
-            <a href={vd.originalUrl} referrerPolicy="no-referrer">
-              {vd.source == 'youtube' ? <YoutubeLogo /> : null}
-              {vd.source == 'tiktok' ? <TiktokLogo /> : null}
-            </a>
+            <div className=" whitespace-pre-wrap break-all">{vd?.description}</div>
+            <div className="break-keep leading-8">
+              {vd.tags.map(t => (
+                <span key={t} className="inline-block bg-base-200 rounded-xl px-2 my-1 mr-1">
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className=" whitespace-pre-wrap">{vd?.description}</div>
-        <div className="break-keep leading-8">
-          {vd.tags.map(t => (
-            <span key={t} className="inline-block bg-base-200 rounded-xl px-2 my-1 mr-1">
-              {t}
-            </span>
-          ))}
+          <InfoCard videoData={vd}></InfoCard>
         </div>
       </div>
     )

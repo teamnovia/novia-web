@@ -1,6 +1,5 @@
 import { NDKEvent, NDKFilter, NDKKind, NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { useEffect, useState } from 'react';
-import { DVM_STATUS_UPDATE, DVM_VIDEO_ARCHIVE_RESULT_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
 import { useSettings } from '../pages/Settings/useSettings';
 import { useNDK } from './ndk';
 import { uniqBy } from 'lodash';
@@ -10,9 +9,10 @@ type DvmEventFilter = {
   pubkey?: string;
   delay?: number;
   limit?: number;
+  kinds: NDKKind[];
 };
 
-export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit = 30 }: DvmEventFilter) => {
+export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit = 30, kinds }: DvmEventFilter) => {
   const [events, setEvents] = useState<NDKEvent[]>([]);
   const [trigger, setTrigger] = useState(0);
   const { relays } = useSettings();
@@ -21,8 +21,8 @@ export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit =
   useEffect(() => {
     if (trigger >= 0) {
       const filter = {
-        kinds: [DVM_VIDEO_ARCHIVE_RESULT_KIND as NDKKind, DVM_VIDEO_UPLOAD_RESULT_KIND, DVM_STATUS_UPDATE],
-        limit
+        kinds,
+        limit,
       } as NDKFilter;
 
       if (recoveryRequestId) {
@@ -50,7 +50,7 @@ export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit =
         sub.stop();
       };
     }
-  }, [recoveryRequestId, trigger]);
+  }, [recoveryRequestId, trigger, pubkey]);
 
   return {
     events,

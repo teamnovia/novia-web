@@ -9,7 +9,7 @@ export const VideoThumb = ({
   skipBlur,
   userServers,
   vertical,
-  className = 'w-full mb-2'
+  className = 'w-full mb-2',
 }: {
   video: VideoData;
   skipBlur: boolean;
@@ -39,7 +39,9 @@ export const VideoThumb = ({
   };
 
   return (
-    <div className={`${className} relative ${vertical ? 'aspect-portrait' : 'aspect-video'} overflow-hidden rounded-lg`}>
+    <div
+      className={`${className} relative ${vertical ? 'aspect-portrait' : 'aspect-video'} overflow-hidden rounded-lg`}
+    >
       <img
         onClick={onClick}
         className={`rounded-lg object-cover absolute top-0 left-0 w-full h-full ${

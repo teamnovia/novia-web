@@ -13,7 +13,7 @@ export const Notifications = ({ userServers }: { userServers: string[] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { ndk, user } = useNDK();
-  const { events } = useDvmEvents({ pubkey: user?.pubkey });
+  const { events } = useDvmEvents({ pubkey: user?.pubkey, kinds: [DVM_VIDEO_UPLOAD_RESULT_KIND] });
   const [videoNotifications, setVideoNotifications] = useState<VideoData[]>([]);
   const navigate = useNavigate();
 
@@ -80,7 +80,7 @@ export const Notifications = ({ userServers }: { userServers: string[] }) => {
         <ul
           tabIndex={0}
           role="menu"
-          className={`z-50 w-96 md:w-[48em] absolute right-0 dropdown-content border-primary border menu p-2 shadow-xl shadow-base-300 bg-base-100 rounded-box`}
+          className={`z-50 w-96 md:w-[48em] mt-1 absolute right-0 dropdown-content border-primary border menu p-2 shadow-xl shadow-base-300 bg-base-200 rounded-box`}
         >
           {videoNotifications.map(v => (
             <li
@@ -95,7 +95,7 @@ export const Notifications = ({ userServers }: { userServers: string[] }) => {
                   <PlayIcon className="w-8" />
                 </div>
                 <VideoThumb
-                className='w-20 min-w-20'
+                  className="w-20 min-w-20"
                   video={v}
                   skipBlur={false}
                   onClick={() => {

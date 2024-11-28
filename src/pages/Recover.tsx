@@ -7,7 +7,7 @@ import { useNDK } from '../utils/ndk';
 import { nip19 } from 'nostr-tools';
 import Avatar from '../components/Avatar';
 import { ArrowPathIcon } from '@heroicons/react/16/solid';
-import { DVM_VIDEO_UPLOAD_REQUEST_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
+import { DVM_STATUS_UPDATE, DVM_VIDEO_UPLOAD_REQUEST_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
 import { DvmStatus, StatusType } from '../types';
 import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
@@ -22,7 +22,11 @@ function Recover() {
   const navigate = useNavigate();
   const [statusEvents, setStatusEvents] = useState<StatusType[]>([]);
   const { relays, blossomServersForUploads } = useSettings();
-  const { events, stopAutorefresh } = useDvmEvents({ recoveryRequestId, delay: 5000 });
+  const { events, stopAutorefresh } = useDvmEvents({
+    recoveryRequestId,
+    delay: 5000,
+    kinds: [DVM_VIDEO_UPLOAD_RESULT_KIND, DVM_STATUS_UPDATE],
+  });
 
   useEffect(() => {
     document.title = 'novia | Recover';

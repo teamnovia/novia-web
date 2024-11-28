@@ -4,7 +4,7 @@ import './Layout.css';
 import { useEffect } from 'react';
 import useLocalStorageState from '../../utils/useLocalStorageState';
 import ScrollToTop from '../ScrollToTop';
-import {  Cog6ToothIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, PlusIcon } from '@heroicons/react/24/outline';
 import LoginButton from '../LoginButton';
 import { Notifications } from '../Notifications';
 
