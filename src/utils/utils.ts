@@ -93,6 +93,7 @@ export type VideoData = {
   format: VideoFormat;
   relayUrl?: string;
   contentWarning?: string;
+  language?: string;
 };
 
 export function mapVideoData(ev: NDKEvent): VideoData {
@@ -129,6 +130,7 @@ export function mapVideoData(ev: NDKEvent): VideoData {
     tags: ev.tags.filter(t => t[0] == 't').map(t => t[1]),
     format: ev.kind == NDKKind.HorizontalVideo ? 'widescreen' : 'vertical',
     contentWarning: getTagValue(ev, 'content-warning'),
+    language: getTagValue(ev, 'l', 'ISO-639-1'),
     dim,
     naddr: nip19.naddrEncode({
       identifier: getTagValue(ev, 'd'),

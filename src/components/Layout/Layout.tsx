@@ -1,6 +1,5 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useNDK } from '../../utils/ndk';
-import './Layout.css';
 import { useEffect } from 'react';
 import useLocalStorageState from '../../utils/useLocalStorageState';
 import ScrollToTop from '../ScrollToTop';
@@ -18,7 +17,7 @@ export const Layout = () => {
   }, []);
 
   return (
-    <div className="main">
+    <div className="flex flex-col justify-center">
       <ScrollToTop />
       <div className="navbar bg-base-300 min-h-0">
         <div className="navbar-start">
@@ -59,13 +58,17 @@ export const Layout = () => {
           )}
         </div>
       </div>
-      <div className="content">{<Outlet />}</div>
-      <div className="footer">
-        <span className="flex flex-row gap-1 items-center">
+      <div className="flex flex-col self-center md:w-10/12 w-full min-h-[80vh] px-2 md:px-4">{<Outlet />}</div>
+      <div className="justify-center gap-1 text-base-content pt-12 pb-12">
+        <span className="flex flex-row gap-1 justify-center items-center">
           made with <span>💜</span>by team
-          <a href="https://njump.me/" className="flex flex-row gap-1 items-center">
+          <a
+            href="https://njump.me/npub1htfus9ztjchzlhjvjvqmrewfsw4fhdc8j6r4p0epjlglw9lhra4sa5re40"
+            target="_blank"
+            className="flex flex-row gap-1 items-center"
+          >
             <div className="avatar">
-              <div className="w-8 rounded-full">
+              <div className="w-8 mx-1 rounded-full">
                 <img src="/dl.png" />
               </div>
             </div>

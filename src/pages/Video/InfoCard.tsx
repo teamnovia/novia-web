@@ -1,6 +1,7 @@
 import Avatar from '../../components/Avatar';
 import { TiktokLogo } from '../../components/icons/TiktokLogo';
 import { YoutubeLogo } from '../../components/icons/YoutubeLogo';
+import { getLanguageFlag, LanguageCode } from '../../utils/languages';
 import { formatDate, toTime, VideoData } from '../../utils/utils';
 
 export const InfoCard = ({ videoData }: { videoData: VideoData }) => {
@@ -18,6 +19,12 @@ export const InfoCard = ({ videoData }: { videoData: VideoData }) => {
         </a>
         <div>Published: </div>
         <div className="text-white">{formatDate(videoData.published_at)}</div>
+        {videoData.language && (
+          <>
+            <div>Lanugage: </div>
+            <div className="text-white">{getLanguageFlag(videoData.language as LanguageCode)}</div>
+          </>
+        )}
         {videoData.dim && (
           <>
             <div>Dimension: </div>

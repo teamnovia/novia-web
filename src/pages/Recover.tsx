@@ -11,6 +11,7 @@ import { ConfigNeeded } from './Home/ConfigNeeded';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useDvmEvents } from '../utils/useDvmEvents';
 import { DvmResponseStatusList } from '../components/DvmRepsonseStatusList';
+import { getLanguageFlag, LanguageCode } from '../utils/languages';
 
 function Recover() {
   const { video } = useParams();
@@ -88,6 +89,12 @@ function Recover() {
               </div>
               <div>Published: </div>
               <div className="text-white">{formatDate(videoData.published_at)}</div>
+              {videoData.language && (
+                <>
+                  <div>Lanugage: </div>
+                  <div className="text-white">{getLanguageFlag(videoData.language as LanguageCode)}</div>
+                </>
+              )}
               {videoData.dim && (
                 <>
                   <div>Dimension: </div>

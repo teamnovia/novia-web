@@ -62,7 +62,7 @@ function Video() {
 
   return (
     vd && (
-      <div className="mt-4 gap-4 flex flex-col">
+      <div className="mt-2 md:mt-4 gap-4 flex flex-col">
         {errorMessage && <span className="alert alert-error">{errorMessage} </span>}
         {noServerFound && (
           <div className="alert alert-ghost border-error flex flex-col md:flex-row">
