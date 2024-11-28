@@ -5,6 +5,9 @@ export type StatusType = {
   msg: string;
   npub: string;
   status: DvmStatus;
+  active: boolean;
+  created_at: number;
+
   //thumb?: string;
   /* payment?: {
       amount?: number;

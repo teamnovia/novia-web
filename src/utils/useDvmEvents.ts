@@ -5,14 +5,14 @@ import { useNDK } from './ndk';
 import { uniqBy } from 'lodash';
 
 type DvmEventFilter = {
-  recoveryRequestId?: string;
+  originalRequestId?: string;
   pubkey?: string;
   delay?: number;
   limit?: number;
   kinds: NDKKind[];
 };
 
-export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit = 30, kinds }: DvmEventFilter) => {
+export const useDvmEvents = ({ originalRequestId, pubkey, delay = 30000, limit = 30, kinds }: DvmEventFilter) => {
   const [events, setEvents] = useState<NDKEvent[]>([]);
   const [trigger, setTrigger] = useState(0);
   const { relays } = useSettings();
@@ -25,8 +25,8 @@ export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit =
         limit,
       } as NDKFilter;
 
-      if (recoveryRequestId) {
-        filter['#e'] = [recoveryRequestId || ''];
+      if (originalRequestId) {
+        filter['#e'] = [originalRequestId || ''];
       }
 
       if (pubkey) {
@@ -34,23 +34,27 @@ export const useDvmEvents = ({ recoveryRequestId, pubkey, delay = 30000, limit =
       }
 
       const relaySet = (relays?.length ?? 0 > 0) ? NDKRelaySet.fromRelayUrls(relays as string[], ndk) : undefined;
+
       const sub = ndk.subscribe(filter, { closeOnEose: false }, relaySet);
+
       sub.on('event', (ev: NDKEvent) => {
         setEvents(evs => {
           const newEvents = evs.concat([ev]).sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0));
           return uniqBy(newEvents, (e: NDKEvent) => e.tagId());
         });
       });
+
       sub.on('eose', () => {
         setTimeout(() => {
           setTrigger(t => t + 1);
         }, delay);
       });
+
       return () => {
         sub.stop();
       };
     }
-  }, [recoveryRequestId, trigger, pubkey]);
+  }, [originalRequestId, trigger, pubkey]);
 
   return {
     events,

@@ -1,18 +1,16 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useVideoData } from './useVideoData';
 import { formatDate, formatFileSize, getProxyUrl, toTime, VideoData } from '../utils/utils';
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NDKDVMRequest, NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { useNDK } from '../utils/ndk';
-import { nip19 } from 'nostr-tools';
 import Avatar from '../components/Avatar';
-import { ArrowPathIcon } from '@heroicons/react/16/solid';
 import { DVM_STATUS_UPDATE, DVM_VIDEO_UPLOAD_REQUEST_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
-import { DvmStatus, StatusType } from '../types';
 import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { useDvmEvents } from '../utils/useDvmEvents';
+import { DvmResponseStatusList } from '../components/DvmRepsonseStatusList';
 
 function Recover() {
   const { video } = useParams();
@@ -20,10 +18,9 @@ function Recover() {
   const { ndk } = useNDK();
   const [recoveryRequestId, setRecoveryRequestId] = useState<string | undefined>();
   const navigate = useNavigate();
-  const [statusEvents, setStatusEvents] = useState<StatusType[]>([]);
   const { relays, blossomServersForUploads } = useSettings();
   const { events, stopAutorefresh } = useDvmEvents({
-    recoveryRequestId,
+    originalRequestId: recoveryRequestId,
     delay: 5000,
     kinds: [DVM_VIDEO_UPLOAD_RESULT_KIND, DVM_STATUS_UPDATE],
   });
@@ -31,45 +28,6 @@ function Recover() {
   useEffect(() => {
     document.title = 'novia | Recover';
   }, []);
-
-  // for longer running uploads I have to resubscribe
-
-  useEffect(() => {
-    const newStatusMessages: StatusType[] = [];
-    // console.log(events);
-    events
-      .sort((a, b) => (a.created_at && b.created_at && a.created_at > b.created_at ? 1 : -1))
-      .forEach(e => {
-        if (e.kind == DVM_VIDEO_UPLOAD_RESULT_KIND && e.tagValue('e') == recoveryRequestId) {
-          stopAutorefresh();
-          navigate(`/v/${video}`);
-        }
-        if (e.kind == 7000 && e.tagValue('e') == recoveryRequestId) {
-          let data: { msg?: string; thumb?: string } = {};
-          try {
-            data = JSON.parse(e.content) as { msg?: string; thumb?: string };
-          } catch (e) {
-            console.error(e);
-          }
-
-          newStatusMessages.push({
-            id: e.id,
-            npub: nip19.npubEncode(e.pubkey),
-            status: e.tagValue('status') as DvmStatus,
-            msg: data.msg || '',
-            //thumb: data.thumb,
-            /*payment: {
-              amount: paymentRequest?.amount,
-              unit: paymentRequest?.unit,
-              pr,
-            },*/
-          });
-
-          // Handle status messages
-        }
-      });
-    setStatusEvents(newStatusMessages);
-  }, [events, recoveryRequestId, ndk]);
 
   const publishRecoveryRequest = async (videoData: VideoData) => {
     if (!videoData.x || !videoData.relayUrl) return;
@@ -152,31 +110,17 @@ function Recover() {
             this size.
           </div>
         )}
-        {recoveryRequestId && (
-          <div className="block py-4">
-            looking for archives that have the video...
-            {statusEvents.length == 0 && <ArrowPathIcon className="inline animate-spin w-6 "></ArrowPathIcon>}
-          </div>
-        )}
 
-        {statusEvents.length > 0 && (
-          <div className="text-sm flex flex-col rounded-md">
-            <div className="bg-base-300 p-4 grid grid-cols-3 gap-4 items-center rounded-md">
-              {statusEvents.map(s => (
-                <Fragment key={s.id}>
-                  <div>
-                    <Avatar npub={s.npub}></Avatar>
-                  </div>
-                  <div className="flex gap-2">
-                    <span className={s.status == 'error' ? ' text-error font-bold' : ''}>{s.status}</span>
-                    <ArrowPathIcon className=" animate-spin w-6 "></ArrowPathIcon>
-                  </div>
-                  <div>{s.msg && s.msg}</div>
-                </Fragment>
-              ))}
-            </div>
-          </div>
-        )}
+        <DvmResponseStatusList
+          infoText="looking for archives that have the video..."
+          originalRequestId={recoveryRequestId}
+          events={events}
+          resultKind={DVM_VIDEO_UPLOAD_RESULT_KIND}
+          onFinished={() => {
+            stopAutorefresh();
+            navigate(`/v/${video}`);
+          }}
+        ></DvmResponseStatusList>
       </div>
     )
   );
