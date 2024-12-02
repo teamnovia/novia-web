@@ -91,7 +91,7 @@ function Home() {
     const archiveSubscription = ndk.subscribe(
       videoFilter,
       {
-        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL,
+        cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY,
         closeOnEose: true,
       },
       NDKRelaySet.fromRelayUrls(relays, ndk)
@@ -290,7 +290,7 @@ function Home() {
         )}
         {videos && videos.length > 0 && (
           <div
-            className={`grid gap-4 md:gap-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'}`}
+            className={`grid gap-4 md:gap-x-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'}`}
           >
             {videos.map(
               v =>

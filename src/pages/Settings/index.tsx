@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ServerList } from './ServerList';
 import { useSettings } from './useSettings';
-import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 
 function Settings() {
   const {
@@ -18,6 +18,7 @@ function Settings() {
   }, []);
 
   // TODO add button to reset cache
+  const rugpullWarning = useMemo(() => relays.some(r => r.indexOf('noviatest.nostr1.com') >= 0), [relays]);
 
   return (
     <div className="flex flex-col md:flex-row gap-4 md:gap-8 mt-4 md:mt-8 w-full">
@@ -33,6 +34,13 @@ function Settings() {
           <InformationCircleIcon className="w-8" /> We look for archived videos on these relays and publish recovery
           requests here.
         </div>
+
+        {rugpullWarning && (
+          <div className="alert border-error  mt-4">
+            <ExclamationTriangleIcon className="w-8 text-error" />
+            The noviatest.nostr1.com relay might be deleted very soon.
+          </div>
+        )}
       </div>
 
       <div className="bg-base-200 rounded-2xl p-4 md:p-8 w-full md:w-1/2">
@@ -62,8 +70,6 @@ function Settings() {
           When you recover videos they are uploaded to these servers.
         </div>
       </div>
-
-      <div className=""></div>
     </div>
   );
 }

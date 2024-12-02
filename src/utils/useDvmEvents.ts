@@ -1,4 +1,4 @@
-import { NDKEvent, NDKFilter, NDKKind, NDKRelaySet } from '@nostr-dev-kit/ndk';
+import { NDKEvent, NDKFilter, NDKKind, NDKRelaySet, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk';
 import { useEffect, useState } from 'react';
 import { useSettings } from '../pages/Settings/useSettings';
 import { useNDK } from './ndk';
@@ -35,7 +35,11 @@ export const useDvmEvents = ({ originalRequestId, pubkey, delay = 30000, limit =
 
       const relaySet = (relays?.length ?? 0 > 0) ? NDKRelaySet.fromRelayUrls(relays as string[], ndk) : undefined;
 
-      const sub = ndk.subscribe(filter, { closeOnEose: false }, relaySet);
+      const sub = ndk.subscribe(
+        filter,
+        { closeOnEose: false, cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY },
+        relaySet
+      );
 
       sub.on('event', (ev: NDKEvent) => {
         setEvents(evs => {
