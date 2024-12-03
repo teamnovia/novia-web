@@ -91,7 +91,7 @@ function Recover() {
               <div className="text-white">{formatDate(videoData.published_at)}</div>
               {videoData.language && (
                 <>
-                  <div>Lanugage: </div>
+                  <div>Language: </div>
                   <div className="text-white">{getLanguageFlag(videoData.language as LanguageCode)}</div>
                 </>
               )}

@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { mapVideoData, VideoData, VideoFormat } from '../../utils/utils';
-import LazyLoad from 'react-lazyload';
 import MiniSearch from 'minisearch';
 import { useNDK } from '../../utils/ndk';
 import { NDKFilter, NDKKind, NDKRelaySet, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk';
@@ -285,7 +284,8 @@ function Home() {
         </div>
         {author && (
           <div className="text-2xl py-4 mb-4">
-            All videos by <span className="text-white">{author}</span>
+            All videos by <span className="text-white">{author}</span>{' '}
+            {videos && videos.length > 0 ? `(${videos.length})` : ''}
           </div>
         )}
         {videos && videos.length > 0 && (
@@ -295,7 +295,8 @@ function Home() {
             {videos.map(
               v =>
                 v.image && (
-                  <LazyLoad key={v.eventId}>
+                  //<LazyLoad key={v.eventId}>
+                  <Fragment key={v.eventId}>
                     <VideoElement
                       vertical={format == 'vertical' || verticalVideoRatio > 0.95}
                       onClick={() => videoClicked(v)}
@@ -303,8 +304,9 @@ function Home() {
                       video={v}
                       author={author}
                       userServers={userServers}
-                    ></VideoElement>
-                  </LazyLoad>
+                    />
+                  </Fragment>
+                  // </LazyLoad>*/}
                 )
             )}
           </div>

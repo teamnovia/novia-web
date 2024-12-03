@@ -27,6 +27,7 @@ const languageToCountryMap: Record<LanguageCode, CountryCode> = {
  * @returns The flag emoji as a string.
  */
 function getFlagEmoji(countryCode: CountryCode): string {
+  if (!countryCode) return '';
   const codePoints = countryCode
     .toUpperCase()
     .split('')
