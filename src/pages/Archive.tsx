@@ -10,11 +10,7 @@ import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
 import { DvmResponseStatusList } from '../components/DvmRepsonseStatusList';
 import { useDvmEvents } from '../utils/useDvmEvents';
-
-type ArchiveResult = {
-  naddr: AddressPointer;
-  eventId: string;
-};
+import { ArchiveResult } from '../types';
 
 function Archive() {
   const { ndk } = useNDK();
@@ -55,7 +51,7 @@ function Archive() {
             resultKind={DVM_VIDEO_ARCHIVE_RESULT_KIND}
             onFinished={resultEvent => {
               const archiveResult = JSON.parse(resultEvent.content) as ArchiveResult;
-              navigate(`/v/${nip19.naddrEncode(archiveResult.naddr)}`);
+              navigate(`/v/${archiveResult.naddr}`);
             }}
           ></DvmResponseStatusList>
         ) : (

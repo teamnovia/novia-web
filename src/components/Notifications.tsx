@@ -2,7 +2,7 @@ import { BellIcon, PlayIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState } from 'react';
 import { useDvmEvents } from '../utils/useDvmEvents';
 import { useNDK } from '../utils/ndk';
-import { DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
+import { DVM_VIDEO_RECOVER_RESULT_KIND } from '../env';
 import { NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { mapVideoData, VideoData } from '../utils/utils';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ export const Notifications = ({ userServers }: { userServers: string[] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { ndk, user } = useNDK();
-  const { events } = useDvmEvents({ pubkey: user?.pubkey, kinds: [DVM_VIDEO_UPLOAD_RESULT_KIND] });
+  const { events } = useDvmEvents({ pubkey: user?.pubkey, kinds: [DVM_VIDEO_RECOVER_RESULT_KIND] });
   const [videoNotifications, setVideoNotifications] = useState<VideoData[]>([]);
   const navigate = useNavigate();
 
@@ -47,7 +47,7 @@ export const Notifications = ({ userServers }: { userServers: string[] }) => {
   useEffect(() => {
     const doAsync = async () => {
       const eventIds = events
-        .filter(e => e.kind == DVM_VIDEO_UPLOAD_RESULT_KIND)
+        .filter(e => e.kind == DVM_VIDEO_RECOVER_RESULT_KIND)
         .map(e => e.tags.find(t => t[0] == 'i'))
         .map(t => t && { eventId: t[1], relay: t[3] })
         .filter(v => !!v);

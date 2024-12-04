@@ -6,7 +6,7 @@ import { formatDate, toTime, VideoData } from '../../utils/utils';
 
 export const InfoCard = ({ videoData }: { videoData: VideoData }) => {
   return (
-    <div className="mt-2 w-[40em] min-w-[20em] card bg-base-300">
+    <div className="mt-2 w-full lg:w-[30em] lg:min-w-[20em] card bg-base-300">
       <div className="p-4 grid grid-cols-[auto_minmax(0,1fr)] gap-4 items-center">
         Archivist:
         <div className="text-white">

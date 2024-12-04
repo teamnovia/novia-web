@@ -15,3 +15,14 @@ export type StatusType = {
       pr: string;
     };*/
 };
+
+export type RecoverResult = {
+  nevent: string;
+  video: string;
+  thumb: string;
+  info: string;
+};
+
+export type ArchiveResult = RecoverResult & {
+  naddr: string;
+};

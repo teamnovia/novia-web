@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { NDKDVMRequest, NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { useNDK } from '../utils/ndk';
 import Avatar from '../components/Avatar';
-import { DVM_STATUS_UPDATE, DVM_VIDEO_UPLOAD_REQUEST_KIND, DVM_VIDEO_UPLOAD_RESULT_KIND } from '../env';
+import { DVM_STATUS_UPDATE, DVM_VIDEO_RECOVER_REQUEST_KIND, DVM_VIDEO_RECOVER_RESULT_KIND } from '../env';
 import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
@@ -23,7 +23,7 @@ function Recover() {
   const { events, stopAutorefresh } = useDvmEvents({
     originalRequestId: recoveryRequestId,
     delay: 5000,
-    kinds: [DVM_VIDEO_UPLOAD_RESULT_KIND, DVM_STATUS_UPDATE],
+    kinds: [DVM_VIDEO_RECOVER_RESULT_KIND, DVM_STATUS_UPDATE],
   });
 
   useEffect(() => {
@@ -34,7 +34,7 @@ function Recover() {
     if (!videoData.x || !videoData.relayUrl) return;
 
     const request = new NDKDVMRequest(ndk);
-    request.kind = DVM_VIDEO_UPLOAD_REQUEST_KIND;
+    request.kind = DVM_VIDEO_RECOVER_REQUEST_KIND;
     request.addInput(videoData.eventId, 'event', videoData.relayUrl);
     request.addParam('x', videoData.x);
     for (const server of blossomServersForUploads) {
@@ -122,7 +122,7 @@ function Recover() {
           infoText="looking for archives that have the video..."
           originalRequestId={recoveryRequestId}
           events={events}
-          resultKind={DVM_VIDEO_UPLOAD_RESULT_KIND}
+          resultKind={DVM_VIDEO_RECOVER_RESULT_KIND}
           onFinished={() => {
             stopAutorefresh();
             navigate(`/v/${video}`);
