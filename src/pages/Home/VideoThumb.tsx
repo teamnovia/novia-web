@@ -44,7 +44,7 @@ export const VideoThumb = ({
     >
       <img
         onClick={onClick}
-        className={`rounded-lg object-cover absolute top-0 left-0 w-full h-full ${
+        className={`rounded-lg object-cover absolute top-0 left-0 w-full h-full bg-gray-700 before:content-[''] ${
           video.contentWarning && !skipBlur ? 'blur-md' : ''
         } hover:filter hover:brightness-110`}
         src={imageUrl ? getProxyUrl(imageUrl) : imageUrl}

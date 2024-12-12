@@ -264,7 +264,7 @@ function Home() {
     <>
       {loading && <progress className="progress progress-primary absolute left-0 w-full h-1 " />}
 
-      <div className="flex flex-col mx-auto max-w-[80em] w-full">
+      <div className="flex flex-col mx-auto w-full">
         <div className="flex items-center justify-center py-2 md:py-4 gap-2 md:gap-4 w-full">
           <DropDown value={source} setValue={v => handleSourceSelection(v)} options={sourceOptions} />
           <Input
@@ -290,7 +290,7 @@ function Home() {
         )}
         {videos && videos.length > 0 && (
           <div
-            className={`grid gap-4 md:gap-x-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 md:grid-cols-5 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'}`}
+            className={`grid gap-4 md:gap-x-8 rounded-md ${format == 'vertical' || verticalVideoRatio > 0.95 ? 'grid-cols-2 sm:grid-cols-4 xl:grid-cols-6' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'}`}
           >
             {videos.map(
               v =>

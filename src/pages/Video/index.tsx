@@ -62,7 +62,7 @@ function Video() {
 
   return (
     vd && (
-      <div className="mt-2 md:mt-4 gap-4 flex flex-col">
+      <div className="mt-2 md:mt-4 gap-4 flex flex-col w-full 2xl:w-10/12 3xl:w-4/6 m-auto">
         {errorMessage && <span className="alert alert-error">{errorMessage} </span>}
         {noServerFound && (
           <div className="alert alert-ghost border-error flex flex-col md:flex-row">
@@ -103,7 +103,7 @@ function Video() {
             autoPlay={true}
             playsInline
             muted={false}
-            poster={vd.image}
+            poster={vd.image} // TODO find image on blossom servers in case of 404
             onError={e => handleError(e)}
           ></video>
           <MediaControlBar autohide hidden={!videoUrl}>

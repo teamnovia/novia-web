@@ -29,11 +29,11 @@ export const VideoElement = ({
         userServers={userServers}
       ></VideoThumb>
       {!author /* skip when author filter is set */ && (
-        <div className="font-bold text-white" onClick={() => navigate(`/author/${video.author}`)}>
+        <div className="text-sm " onClick={() => navigate(`/author/${video.author}`)}>
           {video.author}
         </div>
       )}
-      <div className="text-sm text-left">{video.title}</div>
+      <div className="text-left text-white" onClick={onClick}>{video.title}</div>
       {video.duration && (
         <div className="text-xs text-right text-white mt-1 ">
           {toTime(video.duration)} | {formatDate(video.published_at)}

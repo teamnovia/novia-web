@@ -2,9 +2,7 @@ import { NDKDVMRequest, NDKRelaySet } from '@nostr-dev-kit/ndk';
 import { useEffect, useState } from 'react';
 import { useNDK } from '../utils/ndk';
 import { DVM_STATUS_UPDATE, DVM_VIDEO_ARCHIVE_REQUEST_KIND, DVM_VIDEO_ARCHIVE_RESULT_KIND } from '../env';
-import { AddressPointer } from 'nostr-tools/nip19';
 import { useNavigate } from 'react-router-dom';
-import { nip19 } from 'nostr-tools';
 import { Input } from '../components/Input';
 import { useSettings } from './Settings/useSettings';
 import { ConfigNeeded } from './Home/ConfigNeeded';
@@ -42,7 +40,7 @@ function Archive() {
 
   return (
     <>
-      <div className="flex flex-col mx-auto max-w-[80em] w-full">
+      <div className="flex flex-col mx-auto w-full">
         {archiveRequestId ? (
           <DvmResponseStatusList
             infoText="Looking for archives to download the video ..."
